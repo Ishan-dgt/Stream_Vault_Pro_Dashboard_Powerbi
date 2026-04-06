@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>StreamVault Pro — OTT Intelligence Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:       #080812;
+  --surface:  #0f0f1e;
+  --card:     #12122a;
+  --card2:    #0e1628;
+  --border:   rgba(255,255,255,0.07);
+  --netflix:  #E50914;
+  --prime:    #00A8E1;
+  --hotstar:  #1A75CF;
+  --sony:     #FFB400;
+  --apple:    #C0C0C0;
+  --zee5:     #7B2FBE;
+  --gold:     #FFD25F;
+  --green:    #2DD4A0;
+  --purple:   #7C6FCD;
+  --text:     #F0F0FA;
+  --muted:    #6B6B8A;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:
+  radial-gradient(ellipse 55% 40% at 10% 15%,rgba(229,9,20,.07) 0%,transparent 60%),
+  radial-gradient(ellipse 50% 35% at 88% 80%,rgba(0,168,225,.06) 0%,transparent 60%),
+  radial-gradient(ellipse 40% 30% at 55% 5%, rgba(124,111,205,.05) 0%,transparent 50%);
+  pointer-events:none;z-index:0;}
+.wrap{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:0 24px 48px;}
+
+/* ── HEADER ── */
+.header{display:flex;align-items:center;justify-content:space-between;padding:20px 0 16px;border-bottom:1px solid var(--border);margin-bottom:22px;}
+.logo-zone{display:flex;align-items:center;gap:14px;}
+.logo-icon{width:44px;height:44px;background:linear-gradient(135deg,var(--netflix),var(--purple));border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.title-block h1{font-family:'Syne',sans-serif;font-weight:800;font-size:19px;letter-spacing:-.3px;}
+.title-block p{font-size:11px;color:var(--muted);margin-top:2px;}
+.live-badge{font-size:11px;padding:5px 13px;border-radius:20px;background:rgba(45,212,160,.12);color:var(--green);border:1px solid rgba(45,212,160,.25);font-weight:600;}
+
+/* ── SLICER SECTION ── */
+.slicer-section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px 22px;margin-bottom:20px;}
+.slicer-row{display:flex;align-items:flex-start;gap:24px;flex-wrap:wrap;}
+.slicer-block{display:flex;flex-direction:column;gap:10px;}
+.slicer-label{font-size:10.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;}
+
+/* Logo Slicer */
+.logo-slicer{display:flex;gap:10px;flex-wrap:wrap;}
+.logo-chip{
+  display:flex;align-items:center;justify-content:center;
+  width:110px;height:54px;
+  border-radius:12px;
+  border:2px solid rgba(255,255,255,0.07);
+  background:rgba(255,255,255,0.04);
+  cursor:pointer;
+  transition:all .22s ease;
+  position:relative;overflow:hidden;
+  padding:8px 10px;
+}
+.logo-chip img{
+  max-width:90px;max-height:36px;
+  width:100%;height:100%;
+  object-fit:contain;
+  transition:transform .2s;
+  filter:brightness(.85) saturate(.9);
+}
+.logo-chip:hover img{transform:scale(1.05);filter:brightness(1) saturate(1);}
+.logo-chip.active{border-color:var(--sel-color, #E50914);background:var(--sel-bg, rgba(229,9,20,.12));box-shadow:0 0 0 1px var(--sel-color,#E50914) inset;}
+.logo-chip.active img{filter:brightness(1) saturate(1);}
+.logo-chip::after{content:'✓';position:absolute;top:4px;right:6px;font-size:9px;color:var(--sel-color,#E50914);font-weight:800;opacity:0;transition:opacity .2s;}
+.logo-chip.active::after{opacity:1;}
+
+/* Genre Slicer */
+.genre-slicer{display:flex;gap:8px;flex-wrap:wrap;}
+.genre-chip{
+  padding:7px 14px;border-radius:20px;font-size:11.5px;font-weight:600;
+  border:1px solid rgba(255,255,255,0.1);
+  background:rgba(255,255,255,0.04);
+  color:var(--muted);cursor:pointer;transition:all .2s;
+}
+.genre-chip:hover{background:rgba(255,255,255,.08);color:var(--text);}
+.genre-chip.active{background:rgba(124,111,205,.2);color:#b8aff5;border-color:rgba(124,111,205,.5);}
+
+/* Rating Slicer */
+.rating-slicer{display:flex;gap:8px;flex-wrap:wrap;}
+.rating-chip{
+  padding:7px 13px;border-radius:20px;font-size:11.5px;font-weight:700;
+  border:1px solid rgba(255,255,255,0.1);
+  background:rgba(255,255,255,0.04);
+  color:var(--muted);cursor:pointer;transition:all .2s;
+}
+.rating-chip:hover{background:rgba(255,255,255,.08);color:var(--text);}
+.rating-chip.active{background:rgba(229,9,20,.18);color:#ff7070;border-color:rgba(229,9,20,.4);}
+
+/* Year Slicer (range slider) */
+.year-slicer{display:flex;flex-direction:column;gap:8px;}
+.year-range{display:flex;align-items:center;gap:10px;}
+.year-display{font-size:13px;font-weight:700;color:var(--gold);min-width:90px;}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;
+  height:4px;border-radius:2px;
+  background:linear-gradient(90deg,var(--netflix) 0%,var(--purple) 100%);
+  outline:none;cursor:pointer;width:160px;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:16px;height:16px;border-radius:50%;
+  background:#fff;cursor:pointer;
+  box-shadow:0 0 0 3px rgba(229,9,20,.4);
+}
+
+/* Country Slicer */
+.country-slicer{display:flex;gap:8px;flex-wrap:wrap;}
+.country-chip{
+  padding:6px 13px;border-radius:20px;font-size:11.5px;font-weight:600;
+  border:1px solid rgba(255,255,255,0.1);
+  background:rgba(255,255,255,0.04);
+  color:var(--muted);cursor:pointer;transition:all .2s;
+}
+.country-chip:hover{background:rgba(255,255,255,.08);color:var(--text);}
+.country-chip.active{background:rgba(0,168,225,.18);color:#5dd0f8;border-color:rgba(0,168,225,.4);}
+
+/* Slicer divider */
+.slicer-div{width:1px;background:var(--border);align-self:stretch;}
+
+/* Clear button */
+.clear-btn{
+  padding:6px 14px;border-radius:10px;font-size:11px;font-weight:600;
+  background:rgba(255,255,255,.05);color:var(--muted);border:1px solid var(--border);
+  cursor:pointer;transition:all .2s;align-self:flex-end;
+}
+.clear-btn:hover{background:rgba(255,80,80,.12);color:#ff7070;border-color:rgba(255,80,80,.3);}
+
+/* ── KPI ROW ── */
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px;}
+.kpi-card{
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:18px 20px;position:relative;overflow:hidden;
+  transition:transform .2s,box-shadow .2s;
+  animation:fadeUp .5s ease both;
+}
+.kpi-card:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(0,0,0,.45);}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.kpi-card:nth-child(1)::before{background:linear-gradient(90deg,#E50914,#ff6b6b);}
+.kpi-card:nth-child(2)::before{background:linear-gradient(90deg,#00A8E1,#40d4ff);}
+.kpi-card:nth-child(3)::before{background:linear-gradient(90deg,var(--green),#00ffcc);}
+.kpi-card:nth-child(4)::before{background:linear-gradient(90deg,var(--gold),#ffaa00);}
+.kpi-card:nth-child(5)::before{background:linear-gradient(90deg,var(--purple),#b57af0);}
+.kpi-card:nth-child(1){animation-delay:.05s}
+.kpi-card:nth-child(2){animation-delay:.1s}
+.kpi-card:nth-child(3){animation-delay:.15s}
+.kpi-card:nth-child(4){animation-delay:.2s}
+.kpi-card:nth-child(5){animation-delay:.25s}
+.kpi-icon{font-size:20px;margin-bottom:10px;}
+.kpi-val{font-family:'Syne',sans-serif;font-weight:800;font-size:30px;line-height:1;margin-bottom:4px;transition:all .4s;}
+.kpi-label{font-size:11px;color:var(--muted);font-weight:500;}
+.kpi-sub{font-size:10.5px;margin-top:5px;color:var(--green);font-weight:600;}
+
+/* ── MAIN GRID ── */
+.main-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:16px;margin-bottom:16px;}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;transition:box-shadow .2s;animation:fadeUp .6s ease .3s both;}
+.chart-card:hover{box-shadow:0 6px 28px rgba(0,0,0,.38);}
+.card-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;}
+.card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;}
+.card-sub{font-size:10.5px;color:var(--muted);margin-top:2px;}
+.badge-sm{font-size:10px;padding:3px 10px;border-radius:10px;background:rgba(255,255,255,.06);color:var(--muted);font-weight:600;white-space:nowrap;}
+
+/* Platform bars */
+.plat-list{display:flex;flex-direction:column;gap:10px;}
+.plat-row{display:flex;align-items:center;gap:8px;}
+.plat-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0;}
+.plat-name{font-size:11.5px;font-weight:600;width:100px;flex-shrink:0;}
+.bar-bg{flex:1;height:7px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:4px;transition:width .8s ease;}
+.plat-count{font-size:11.5px;font-weight:700;width:24px;text-align:right;}
+.plat-pct{font-size:10px;color:var(--muted);width:38px;text-align:right;}
+
+/* Donut SVG */
+.donut-wrap{display:flex;align-items:center;justify-content:center;gap:18px;}
+.donut-legend{display:flex;flex-direction:column;gap:7px;}
+.leg-item{display:flex;align-items:center;gap:7px;font-size:11.5px;}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.leg-name{color:var(--muted);}
+.leg-val{font-weight:700;margin-left:auto;padding-left:10px;}
+
+/* Genre grid */
+.genre-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.gen-item{background:rgba(255,255,255,.04);border-radius:10px;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);transition:background .2s;}
+.gen-item:hover{background:rgba(255,255,255,.07);}
+.gen-name{font-size:11.5px;font-weight:600;}
+.gen-count{font-size:11px;font-weight:700;background:rgba(255,255,255,.08);padding:2px 8px;border-radius:8px;}
+
+/* Bottom grid */
+.bottom-grid{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:16px;margin-bottom:16px;}
+
+/* Rating / bar rows */
+.rt-row{display:flex;align-items:center;gap:9px;margin-bottom:9px;}
+.rt-label{font-size:11.5px;font-weight:700;width:48px;flex-shrink:0;}
+.rt-bg{flex:1;height:20px;background:rgba(255,255,255,.05);border-radius:6px;overflow:hidden;}
+.rt-fill{height:100%;border-radius:6px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:700;color:rgba(255,255,255,.9);}
+
+/* Heatmap */
+.hm-row{display:flex;gap:3px;align-items:center;margin-bottom:3px;}
+.hm-lbl{font-size:9.5px;color:var(--muted);width:64px;flex-shrink:0;font-weight:600;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.hm-cell{flex:1;height:26px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:rgba(255,255,255,.88);transition:transform .15s;cursor:default;}
+.hm-cell:hover{transform:scale(1.08);}
+.hm-colhdr{flex:1;font-size:9px;color:var(--muted);text-align:center;font-weight:600;}
+
+/* Trend line */
+.trend-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px;animation:fadeUp .6s ease .35s both;}
+
+/* Insights */
+.insights{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+.ins-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;gap:11px;align-items:flex-start;}
+.ins-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.ins-text h4{font-size:11.5px;font-weight:700;margin-bottom:3px;}
+.ins-text p{font-size:10.5px;color:var(--muted);line-height:1.5;}
+
+/* Footer */
+.footer{padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;}
+.footer p{font-size:10.5px;color:var(--muted);}
+
+/* No-results */
+.no-results{
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  padding:48px;color:var(--muted);font-size:14px;gap:12px;
+  background:var(--card);border-radius:14px;border:1px solid var(--border);
+}
+.no-results.show{display:flex;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ══ HEADER ══════════════════════════════════════════════ -->
+<div class="header">
+  <div class="logo-zone">
+    <div class="logo-icon">🎬</div>
+    <div class="title-block">
+      <h1>StreamVault Pro</h1>
+      <p>OTT Intelligence Dashboard &nbsp;·&nbsp; 6 Platforms &nbsp;·&nbsp; 2014–2023</p>
+    </div>
+  </div>
+  <div class="live-badge">✓ 70 Titles Loaded</div>
+</div>
+
+<!-- ══ SLICER PANEL ═════════════════════════════════════════ -->
+<div class="slicer-section">
+  <div class="slicer-row">
+
+    <!-- SLICER 1 — Platform Logos -->
+    <div class="slicer-block">
+      <div class="slicer-label">🎬 Filter by Platform</div>
+      <div class="logo-slicer" id="platformSlicer">
+
+        <!-- Netflix -->
+        <div class="logo-chip active" data-platform="Netflix"
+             style="--sel-color:#E50914;--sel-bg:rgba(229,9,20,.12);"
+             onclick="togglePlatform(this)">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Netflix_logo.svg/800px-Netflix_logo.svg.png"
+               alt="Netflix" onerror="this.parentElement.querySelector('.logo-fallback').style.display='flex';this.style.display='none'"/>
+          <span class="logo-fallback" style="display:none;color:#E50914;font-weight:800;font-size:13px;font-family:Syne,sans-serif;">NETFLIX</span>
+        </div>
+
+        <!-- Amazon Prime -->
+        <div class="logo-chip active" data-platform="Amazon Prime"
+             style="--sel-color:#00A8E1;--sel-bg:rgba(0,168,225,.12);"
+             onclick="togglePlatform(this)">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Amazon_Prime_Video_logo.svg/800px-Amazon_Prime_Video_logo.svg.png"
+               alt="Amazon Prime Video" onerror="this.parentElement.querySelector('.logo-fallback').style.display='flex';this.style.display='none'"/>
+          <span class="logo-fallback" style="display:none;color:#00A8E1;font-weight:800;font-size:11px;font-family:Syne,sans-serif;">PRIME VIDEO</span>
+        </div>
+
+        <!-- Hotstar -->
+        <div class="logo-chip active" data-platform="Hotstar"
+             style="--sel-color:#1A75CF;--sel-bg:rgba(26,117,207,.12);"
+             onclick="togglePlatform(this)">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Disney%2B_Hotstar_logo.svg/800px-Disney%2B_Hotstar_logo.svg.png"
+               alt="Hotstar" onerror="this.parentElement.querySelector('.logo-fallback').style.display='flex';this.style.display='none'"/>
+          <span class="logo-fallback" style="display:none;color:#1A75CF;font-weight:800;font-size:13px;font-family:Syne,sans-serif;">HOTSTAR</span>
+        </div>
+
+        <!-- Sony LIV -->
+        <div class="logo-chip active" data-platform="Sony LIV"
+             style="--sel-color:#FFB400;--sel-bg:rgba(255,180,0,.12);"
+             onclick="togglePlatform(this)">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/SonyLIV-logo.svg/800px-SonyLIV-logo.svg.png"
+               alt="Sony LIV" onerror="this.parentElement.querySelector('.logo-fallback').style.display='flex';this.style.display='none'"/>
+          <span class="logo-fallback" style="display:none;color:#FFB400;font-weight:800;font-size:13px;font-family:Syne,sans-serif;">SONY LIV</span>
+        </div>
+
+        <!-- Apple TV+ -->
+        <div class="logo-chip active" data-platform="Apple TV+"
+             style="--sel-color:#C0C0C0;--sel-bg:rgba(192,192,192,.1);"
+             onclick="togglePlatform(this)">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Apple_TV_Plus_Logo.svg/800px-Apple_TV_Plus_Logo.svg.png"
+               alt="Apple TV+" onerror="this.parentElement.querySelector('.logo-fallback').style.display='flex';this.style.display='none'"/>
+          <span class="logo-fallback" style="display:none;color:#ddd;font-weight:800;font-size:13px;font-family:Syne,sans-serif;">APPLE TV+</span>
+        </div>
+
+        <!-- ZEE5 -->
+        <div class="logo-chip active" data-platform="Zee5"
+             style="--sel-color:#7B2FBE;--sel-bg:rgba(123,47,190,.15);"
+             onclick="togglePlatform(this)">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Zee5_logo.svg/800px-Zee5_logo.svg.png"
+               alt="ZEE5" onerror="this.parentElement.querySelector('.logo-fallback').style.display='flex';this.style.display='none'"/>
+          <span class="logo-fallback" style="display:none;color:#b57af0;font-weight:800;font-size:13px;font-family:Syne,sans-serif;">ZEE5</span>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="slicer-div"></div>
+
+    <!-- SLICER 2 — Genre -->
+    <div class="slicer-block">
+      <div class="slicer-label">🎭 Genre</div>
+      <div class="genre-slicer" id="genreSlicer">
+        <div class="genre-chip active" data-genre="All" onclick="toggleGenre(this)">All</div>
+        <div class="genre-chip" data-genre="Action" onclick="toggleGenre(this)">🎬 Action</div>
+        <div class="genre-chip" data-genre="Drama" onclick="toggleGenre(this)">🎭 Drama</div>
+        <div class="genre-chip" data-genre="Crime" onclick="toggleGenre(this)">🔍 Crime</div>
+        <div class="genre-chip" data-genre="Sci-Fi" onclick="toggleGenre(this)">🚀 Sci-Fi</div>
+        <div class="genre-chip" data-genre="Comedy" onclick="toggleGenre(this)">😂 Comedy</div>
+        <div class="genre-chip" data-genre="Thriller" onclick="toggleGenre(this)">🕵️ Thriller</div>
+        <div class="genre-chip" data-genre="Horror" onclick="toggleGenre(this)">👻 Horror</div>
+        <div class="genre-chip" data-genre="Romance" onclick="toggleGenre(this)">💘 Romance</div>
+      </div>
+    </div>
+
+    <div class="slicer-div"></div>
+
+    <!-- SLICER 3 — Rating -->
+    <div class="slicer-block">
+      <div class="slicer-label">⭐ Rating</div>
+      <div class="rating-slicer" id="ratingSlicer">
+        <div class="rating-chip active" data-rating="All" onclick="toggleRating(this)">All</div>
+        <div class="rating-chip" data-rating="TV-MA" onclick="toggleRating(this)">TV-MA</div>
+        <div class="rating-chip" data-rating="TV-14" onclick="toggleRating(this)">TV-14</div>
+        <div class="rating-chip" data-rating="PG-13" onclick="toggleRating(this)">PG-13</div>
+        <div class="rating-chip" data-rating="R" onclick="toggleRating(this)">R</div>
+        <div class="rating-chip" data-rating="TV-PG" onclick="toggleRating(this)">TV-PG</div>
+      </div>
+    </div>
+
+    <div class="slicer-div"></div>
+
+    <!-- SLICER 4 — Year Range -->
+    <div class="slicer-block">
+      <div class="slicer-label">📅 Year Range</div>
+      <div class="year-slicer">
+        <div class="year-range">
+          <span class="year-display" id="yearDisplay">2014 – 2023</span>
+        </div>
+        <input type="range" id="yearFrom" min="2014" max="2023" value="2014" step="1" oninput="updateYear()"/>
+        <input type="range" id="yearTo"   min="2014" max="2023" value="2023" step="1" oninput="updateYear()"/>
+      </div>
+    </div>
+
+    <div class="slicer-div"></div>
+
+    <!-- SLICER 5 — Country -->
+    <div class="slicer-block">
+      <div class="slicer-label">🌍 Country</div>
+      <div class="country-slicer" id="countrySlicer">
+        <div class="country-chip active" data-country="All" onclick="toggleCountry(this)">🌐 All</div>
+        <div class="country-chip" data-country="USA" onclick="toggleCountry(this)">🇺🇸 USA</div>
+        <div class="country-chip" data-country="India" onclick="toggleCountry(this)">🇮🇳 India</div>
+        <div class="country-chip" data-country="UK" onclick="toggleCountry(this)">🇬🇧 UK</div>
+        <div class="country-chip" data-country="Spain" onclick="toggleCountry(this)">🇪🇸 Spain</div>
+        <div class="country-chip" data-country="South Korea" onclick="toggleCountry(this)">🇰🇷 S.Korea</div>
+      </div>
+    </div>
+
+    <div class="slicer-div" style="margin-left:auto;"></div>
+    <button class="clear-btn" onclick="clearAll()">✕ Reset All</button>
+
+  </div>
+
+  <!-- Active Filter Summary -->
+  <div id="filterSummary" style="margin-top:12px;font-size:11px;color:var(--muted);display:none;">
+    Showing: <span id="filterText" style="color:var(--gold);font-weight:600;"></span>
+  </div>
+</div>
+
+<!-- ══ KPI CARDS ════════════════════════════════════════════ -->
+<div class="kpi-row">
+  <div class="kpi-card">
+    <div class="kpi-icon">🎬</div>
+    <div class="kpi-val" id="kpiTitles">70</div>
+    <div class="kpi-label">Total Titles</div>
+    <div class="kpi-sub" id="kpiTitlesSub">Across all platforms</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon">📺</div>
+    <div class="kpi-val" id="kpiPlatforms">6</div>
+    <div class="kpi-label">Active Platforms</div>
+    <div class="kpi-sub" id="kpiPlatSub">India + Global</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon">⏱️</div>
+    <div class="kpi-val" id="kpiDuration">74<span style="font-size:14px;font-weight:400"> min</span></div>
+    <div class="kpi-label">Avg Duration</div>
+    <div class="kpi-sub" id="kpiDurSub">Netflix highest @ 122</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon">🌍</div>
+    <div class="kpi-val" id="kpiCountries">5</div>
+    <div class="kpi-label">Countries</div>
+    <div class="kpi-sub" id="kpiCountrySub">USA 47% · India 44%</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon">🔞</div>
+    <div class="kpi-val" id="kpiAdult">45.7<span style="font-size:14px;font-weight:400">%</span></div>
+    <div class="kpi-label">Adult-Rated Content</div>
+    <div class="kpi-sub" id="kpiAdultSub">TV-MA dominant</div>
+  </div>
+</div>
+
+<!-- ══ MAIN CHARTS ══════════════════════════════════════════ -->
+<div class="main-grid">
+
+  <!-- Platform Bar -->
+  <div class="chart-card">
+    <div class="card-hdr">
+      <div>
+        <div class="card-title">Titles by Platform</div>
+        <div class="card-sub">Content volume per streaming service</div>
+      </div>
+      <div class="badge-sm" id="platBadge">70 Total</div>
+    </div>
+    <div class="plat-list" id="platformBars">
+      <div class="plat-row" data-platform="Netflix">
+        <div class="plat-dot" style="background:#E50914"></div>
+        <div class="plat-name">Netflix</div>
+        <div class="bar-bg"><div class="bar-fill" style="width:100%;background:linear-gradient(90deg,#E50914,#ff6060)"></div></div>
+        <div class="plat-count">20</div><div class="plat-pct">28.5%</div>
+      </div>
+      <div class="plat-row" data-platform="Amazon Prime">
+        <div class="plat-dot" style="background:#00A8E1"></div>
+        <div class="plat-name">Amazon Prime</div>
+        <div class="bar-bg"><div class="bar-fill" style="width:50%;background:linear-gradient(90deg,#00A8E1,#40d0ff)"></div></div>
+        <div class="plat-count">10</div><div class="plat-pct">14.3%</div>
+      </div>
+      <div class="plat-row" data-platform="Hotstar">
+        <div class="plat-dot" style="background:#1A75CF"></div>
+        <div class="plat-name">Hotstar</div>
+        <div class="bar-bg"><div class="bar-fill" style="width:50%;background:linear-gradient(90deg,#1A75CF,#4aa0ff)"></div></div>
+        <div class="plat-count">10</div><div class="plat-pct">14.3%</div>
+      </div>
+      <div class="plat-row" data-platform="Sony LIV">
+        <div class="plat-dot" style="background:#FFB400"></div>
+        <div class="plat-name">Sony LIV</div>
+        <div class="bar-bg"><div class="bar-fill" style="width:50%;background:linear-gradient(90deg,#FFB400,#ffcc50)"></div></div>
+        <div class="plat-count">10</div><div class="plat-pct">14.3%</div>
+      </div>
+      <div class="plat-row" data-platform="Apple TV+">
+        <div class="plat-dot" style="background:#C0C0C0"></div>
+        <div class="plat-name">Apple TV+</div>
+        <div class="bar-bg"><div class="bar-fill" style="width:50%;background:linear-gradient(90deg,#aaa,#fff)"></div></div>
+        <div class="plat-count">10</div><div class="plat-pct">14.3%</div>
+      </div>
+      <div class="plat-row" data-platform="Zee5">
+        <div class="plat-dot" style="background:#7B2FBE"></div>
+        <div class="plat-name">ZEE5</div>
+        <div class="bar-bg"><div class="bar-fill" style="width:50%;background:linear-gradient(90deg,#7B2FBE,#b060f0)"></div></div>
+        <div class="plat-count">10</div><div class="plat-pct">14.3%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Genre Grid -->
+  <div class="chart-card">
+    <div class="card-hdr">
+      <div>
+        <div class="card-title">Genre Breakdown</div>
+        <div class="card-sub">14 genres · all platforms</div>
+      </div>
+      <div class="badge-sm">14 Genres</div>
+    </div>
+    <div class="genre-grid">
+      <div class="gen-item"><span class="gen-name">🎬 Action</span><span class="gen-count" style="color:#ff6060">12</span></div>
+      <div class="gen-item"><span class="gen-name">🎭 Drama</span><span class="gen-count" style="color:#40d0ff">12</span></div>
+      <div class="gen-item"><span class="gen-name">🔍 Crime</span><span class="gen-count" style="color:#FFB400">10</span></div>
+      <div class="gen-item"><span class="gen-name">🚀 Sci-Fi</span><span class="gen-count" style="color:#b57af0">8</span></div>
+      <div class="gen-item"><span class="gen-name">😂 Comedy</span><span class="gen-count" style="color:#2DD4A0">8</span></div>
+      <div class="gen-item"><span class="gen-name">🕵️ Thriller</span><span class="gen-count" style="color:#f07070">7</span></div>
+      <div class="gen-item"><span class="gen-name">👻 Horror</span><span class="gen-count" style="color:#c080ff">3</span></div>
+      <div class="gen-item"><span class="gen-name">💘 Romance</span><span class="gen-count" style="color:#ff80b0">3</span></div>
+    </div>
+  </div>
+
+  <!-- Country Donut -->
+  <div class="chart-card">
+    <div class="card-hdr">
+      <div>
+        <div class="card-title">Country Origin</div>
+        <div class="card-sub">Production country split</div>
+      </div>
+    </div>
+    <div class="donut-wrap">
+      <svg width="118" height="118" viewBox="0 0 118 118">
+        <circle cx="59" cy="59" r="44" fill="none" stroke="#00A8E1" stroke-width="17"
+          stroke-dasharray="130 277" stroke-dashoffset="0" transform="rotate(-90 59 59)"/>
+        <circle cx="59" cy="59" r="44" fill="none" stroke="#FF8C00" stroke-width="17"
+          stroke-dasharray="122 285" stroke-dashoffset="-130" transform="rotate(-90 59 59)"/>
+        <circle cx="59" cy="59" r="44" fill="none" stroke="#7C6FCD" stroke-width="17"
+          stroke-dasharray="16 391" stroke-dashoffset="-252" transform="rotate(-90 59 59)"/>
+        <circle cx="59" cy="59" r="44" fill="none" stroke="#2DD4A0" stroke-width="17"
+          stroke-dasharray="9 398" stroke-dashoffset="-268" transform="rotate(-90 59 59)"/>
+        <text x="59" y="54" text-anchor="middle" fill="#fff" font-size="13" font-weight="800" font-family="Syne,sans-serif">70</text>
+        <text x="59" y="69" text-anchor="middle" fill="#6B6B8A" font-size="9">Titles</text>
+      </svg>
+      <div class="donut-legend">
+        <div class="leg-item"><div class="leg-dot" style="background:#00A8E1"></div><span class="leg-name">🇺🇸 USA</span><span class="leg-val">33</span></div>
+        <div class="leg-item"><div class="leg-dot" style="background:#FF8C00"></div><span class="leg-name">🇮🇳 India</span><span class="leg-val">31</span></div>
+        <div class="leg-item"><div class="leg-dot" style="background:#7C6FCD"></div><span class="leg-name">🇬🇧 UK</span><span class="leg-val">4</span></div>
+        <div class="leg-item"><div class="leg-dot" style="background:#2DD4A0"></div><span class="leg-name">🌍 Others</span><span class="leg-val">2</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BOTTOM CHARTS ════════════════════════════════════════ -->
+<div class="bottom-grid">
+
+  <!-- Rating Bars -->
+  <div class="chart-card">
+    <div class="card-hdr">
+      <div>
+        <div class="card-title">Rating Distribution</div>
+        <div class="card-sub">Content maturity breakdown</div>
+      </div>
+    </div>
+    <div class="rt-row"><div class="rt-label">TV-MA</div><div class="rt-bg"><div class="rt-fill" style="width:45.7%;background:linear-gradient(90deg,#E50914,#ff6060)">32</div></div></div>
+    <div class="rt-row"><div class="rt-label">TV-14</div><div class="rt-bg"><div class="rt-fill" style="width:17.1%;background:linear-gradient(90deg,#FFB400,#ffcc50)">12</div></div></div>
+    <div class="rt-row"><div class="rt-label">PG-13</div><div class="rt-bg"><div class="rt-fill" style="width:12.9%;background:linear-gradient(90deg,#00A8E1,#40d0ff)">9</div></div></div>
+    <div class="rt-row"><div class="rt-label">R</div><div class="rt-bg"><div class="rt-fill" style="width:11.4%;background:linear-gradient(90deg,#7C6FCD,#a080f0)">8</div></div></div>
+    <div class="rt-row"><div class="rt-label">TV-PG</div><div class="rt-bg"><div class="rt-fill" style="width:11.4%;background:linear-gradient(90deg,#2DD4A0,#00ffcc)">8</div></div></div>
+    <div class="rt-row"><div class="rt-label">PG</div><div class="rt-bg"><div class="rt-fill" style="width:1.4%;background:#888;padding-left:22px">1</div></div></div>
+  </div>
+
+  <!-- Avg Duration -->
+  <div class="chart-card">
+    <div class="card-hdr">
+      <div>
+        <div class="card-title">Avg Duration by Platform</div>
+        <div class="card-sub">Minutes — movie vs series effect</div>
+      </div>
+    </div>
+    <div class="rt-row"><div class="rt-label" style="font-size:10.5px">Netflix</div><div class="rt-bg"><div class="rt-fill" style="width:100%;background:linear-gradient(90deg,#E50914,#ff6060)">122 min</div></div></div>
+    <div class="rt-row"><div class="rt-label" style="font-size:10.5px">Hotstar</div><div class="rt-bg"><div class="rt-fill" style="width:63%;background:linear-gradient(90deg,#1A75CF,#4aa0ff)">77 min</div></div></div>
+    <div class="rt-row"><div class="rt-label" style="font-size:10.5px">Amz Prime</div><div class="rt-bg"><div class="rt-fill" style="width:48%;background:linear-gradient(90deg,#00A8E1,#40d0ff)">59 min</div></div></div>
+    <div class="rt-row"><div class="rt-label" style="font-size:10.5px">Sony LIV</div><div class="rt-bg"><div class="rt-fill" style="width:40%;background:linear-gradient(90deg,#FFB400,#ffcc50)">49 min</div></div></div>
+    <div class="rt-row"><div class="rt-label" style="font-size:10.5px">Apple TV+</div><div class="rt-bg"><div class="rt-fill" style="width:39%;background:linear-gradient(90deg,#aaa,#ddd)">47 min</div></div></div>
+    <div class="rt-row"><div class="rt-label" style="font-size:10.5px">ZEE5</div><div class="rt-bg"><div class="rt-fill" style="width:35%;background:linear-gradient(90deg,#7B2FBE,#b060f0)">42 min</div></div></div>
+  </div>
+
+  <!-- Heatmap Platform × Rating -->
+  <div class="chart-card">
+    <div class="card-hdr">
+      <div>
+        <div class="card-title">Platform × Rating Heatmap</div>
+        <div class="card-sub">Deeper red = more titles</div>
+      </div>
+    </div>
+    <div>
+      <div class="hm-row">
+        <div class="hm-lbl"></div>
+        <div class="hm-colhdr">PG-13</div>
+        <div class="hm-colhdr">R</div>
+        <div class="hm-colhdr">TV-14</div>
+        <div class="hm-colhdr">TV-MA</div>
+        <div class="hm-colhdr">TV-PG</div>
+      </div>
+      <div class="hm-row"><div class="hm-lbl">Netflix</div><div class="hm-cell" style="background:rgba(229,9,20,.55)">6</div><div class="hm-cell" style="background:rgba(229,9,20,.78)">8</div><div class="hm-cell" style="background:rgba(229,9,20,.22)">2</div><div class="hm-cell" style="background:rgba(229,9,20,.22)">2</div><div class="hm-cell" style="background:rgba(229,9,20,.12)">1</div></div>
+      <div class="hm-row"><div class="hm-lbl">Amz Prime</div><div class="hm-cell" style="background:rgba(255,255,255,.04)">0</div><div class="hm-cell" style="background:rgba(255,255,255,.04)">0</div><div class="hm-cell" style="background:rgba(0,168,225,.22)">1</div><div class="hm-cell" style="background:rgba(0,168,225,.72)">7</div><div class="hm-cell" style="background:rgba(0,168,225,.2)">2</div></div>
+      <div class="hm-row"><div class="hm-lbl">Hotstar</div><div class="hm-cell" style="background:rgba(26,117,207,.45)">3</div><div class="hm-cell" style="background:rgba(255,255,255,.04)">0</div><div class="hm-cell" style="background:rgba(26,117,207,.18)">1</div><div class="hm-cell" style="background:rgba(26,117,207,.65)">5</div><div class="hm-cell" style="background:rgba(26,117,207,.18)">1</div></div>
+      <div class="hm-row"><div class="hm-lbl">Sony LIV</div><div class="hm-cell" style="background:rgba(255,255,255,.04)">0</div><div class="hm-cell" style="background:rgba(255,255,255,.04)">0</div><div class="hm-cell" style="background:rgba(255,180,0,.55)">5</div><div class="hm-cell" style="background:rgba(255,180,0,.45)">4</div><div class="hm-cell" style="background:rgba(255,180,0,.18)">1</div></div>
+      <div class="hm-row"><div class="hm-lbl">Apple TV+</div><div class="hm-cell" style="background:rgba(255,255,255,.04)">0</div><div class="hm-cell" style="background:rgba(255,255,255,.04)">0</div><div class="hm-cell" style="background:rgba(180,180,180,.25)">2</div><div class="hm-cell" style="background:rgba(180,180,180,.7)">7</div><div class="hm-cell" style="background:rgba(180,180,180,.18)">1</div></div>
+      <div class="hm-row"><div class="hm-lbl">ZEE5</div><div class="hm-cell" style="background:rgba(255,255,255,.04)">0</div><div class="hm-cell" style="background:rgba(255,255,255,.04)">0</div><div class="hm-cell" style="background:rgba(123,47,190,.25)">1</div><div class="hm-cell" style="background:rgba(123,47,190,.75)">7</div><div class="hm-cell" style="background:rgba(123,47,190,.22)">2</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TREND LINE ═══════════════════════════════════════════ -->
+<div class="trend-card">
+  <div class="card-hdr">
+    <div>
+      <div class="card-title">Content Release Trend (2014–2023)</div>
+      <div class="card-sub">Titles released per year — peaked in 2020 with 16 titles</div>
+    </div>
+    <div class="badge-sm">10-Year View</div>
+  </div>
+  <svg width="100%" height="130" viewBox="0 0 900 130" preserveAspectRatio="xMidYMid meet">
+    <line x1="0" y1="110" x2="900" y2="110" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+    <line x1="0" y1="82"  x2="900" y2="82"  stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+    <line x1="0" y1="54"  x2="900" y2="54"  stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+    <line x1="0" y1="26"  x2="900" y2="26"  stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+    <defs>
+      <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#E50914" stop-opacity=".32"/>
+        <stop offset="100%" stop-color="#E50914" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <polygon points="50,103 170,97 270,57 370,19 470,13 570,44 670,51 780,84 780,110 50,110" fill="url(#areaGrad)"/>
+    <polyline points="50,103 170,97 270,57 370,19 470,13 570,44 670,51 780,84"
+      fill="none" stroke="#E50914" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="50"  cy="103" r="4.5" fill="#E50914"/>
+    <circle cx="170" cy="97"  r="4.5" fill="#E50914"/>
+    <circle cx="270" cy="57"  r="4.5" fill="#E50914"/>
+    <circle cx="370" cy="19"  r="6"   fill="#fff" stroke="#E50914" stroke-width="2.5"/>
+    <circle cx="470" cy="13"  r="6"   fill="#fff" stroke="#E50914" stroke-width="2.5"/>
+    <circle cx="570" cy="44"  r="4.5" fill="#E50914"/>
+    <circle cx="670" cy="51"  r="4.5" fill="#E50914"/>
+    <circle cx="780" cy="84"  r="4.5" fill="#E50914"/>
+    <text x="50"  y="126" text-anchor="middle" fill="#6B6B8A" font-size="10" font-family="DM Sans,sans-serif">2014</text>
+    <text x="170" y="126" text-anchor="middle" fill="#6B6B8A" font-size="10" font-family="DM Sans,sans-serif">2017</text>
+    <text x="270" y="126" text-anchor="middle" fill="#6B6B8A" font-size="10" font-family="DM Sans,sans-serif">2018</text>
+    <text x="370" y="126" text-anchor="middle" fill="#6B6B8A" font-size="10" font-family="DM Sans,sans-serif">2019</text>
+    <text x="470" y="126" text-anchor="middle" fill="#6B6B8A" font-size="10" font-family="DM Sans,sans-serif">2020</text>
+    <text x="570" y="126" text-anchor="middle" fill="#6B6B8A" font-size="10" font-family="DM Sans,sans-serif">2021</text>
+    <text x="670" y="126" text-anchor="middle" fill="#6B6B8A" font-size="10" font-family="DM Sans,sans-serif">2022</text>
+    <text x="780" y="126" text-anchor="middle" fill="#6B6B8A" font-size="10" font-family="DM Sans,sans-serif">2023</text>
+    <text x="370" y="12"  text-anchor="middle" fill="#FFD25F" font-size="11" font-weight="700" font-family="Syne,sans-serif">15</text>
+    <text x="470" y="6"   text-anchor="middle" fill="#FFD25F" font-size="11" font-weight="700" font-family="Syne,sans-serif">16 ⭐</text>
+  </svg>
+</div>
+
+<!-- ══ INSIGHTS ═════════════════════════════════════════════ -->
+<div class="insights">
+  <div class="ins-card"><div class="ins-icon">👑</div><div class="ins-text"><h4>Netflix Dominates</h4><p>28.5% share — heaviest on films (avg 122 min per title)</p></div></div>
+  <div class="ins-card"><div class="ins-icon">🇮🇳</div><div class="ins-text"><h4>India–USA Parity</h4><p>Near-equal split — India 44% vs USA 47% of all content</p></div></div>
+  <div class="ins-card"><div class="ins-icon">🦸</div><div class="ins-text"><h4>Hotstar = Marvel</h4><p>Avengers, Black Widow, Doctor Strange all on Hotstar</p></div></div>
+  <div class="ins-card"><div class="ins-icon">📈</div><div class="ins-text"><h4>2020 Peak Year</h4><p>16 titles in 2020 — highest single-year output in dataset</p></div></div>
+</div>
+
+<!-- ══ FOOTER ════════════════════════════════════════════════ -->
+<div class="footer">
+  <p>📂 Source: mymovies_updated-1.csv &nbsp;·&nbsp; 70 Titles &nbsp;·&nbsp; Zero Null Values</p>
+  <p>StreamVault Pro &nbsp;·&nbsp; Dark OTT Theme &nbsp;·&nbsp; Portfolio Dashboard</p>
+</div>
+
+</div><!-- /wrap -->
+
+<!-- ══ JAVASCRIPT ════════════════════════════════════════════ -->
+<script>
+// ── Full dataset ─────────────────────────────────────────────
+const DATA = [
+  {title:"Extraction",genre:"Action",year:2020,rating:"TV-MA",country:"USA",platform:"Netflix",dur:117},
+  {title:"Bird Box",genre:"Horror",year:2018,rating:"R",country:"USA",platform:"Netflix",dur:124},
+  {title:"The Irishman",genre:"Crime",year:2019,rating:"R",country:"USA",platform:"Netflix",dur:209},
+  {title:"Enola Holmes",genre:"Adventure",year:2020,rating:"PG-13",country:"UK",platform:"Netflix",dur:123},
+  {title:"The Gray Man",genre:"Action",year:2022,rating:"PG-13",country:"USA",platform:"Netflix",dur:129},
+  {title:"The Adam Project",genre:"Sci-Fi",year:2022,rating:"PG-13",country:"USA",platform:"Netflix",dur:106},
+  {title:"Red Notice",genre:"Action",year:2021,rating:"PG-13",country:"USA",platform:"Netflix",dur:118},
+  {title:"The Midnight Sky",genre:"Drama",year:2020,rating:"PG-13",country:"USA",platform:"Netflix",dur:118},
+  {title:"Murder Mystery",genre:"Comedy",year:2019,rating:"PG-13",country:"USA",platform:"Netflix",dur:97},
+  {title:"Don't Look Up",genre:"Comedy",year:2021,rating:"R",country:"USA",platform:"Netflix",dur:138},
+  {title:"Army of the Dead",genre:"Horror",year:2021,rating:"R",country:"USA",platform:"Netflix",dur:148},
+  {title:"The Old Guard",genre:"Action",year:2020,rating:"R",country:"USA",platform:"Netflix",dur:125},
+  {title:"Project Power",genre:"Sci-Fi",year:2020,rating:"R",country:"USA",platform:"Netflix",dur:113},
+  {title:"6 Underground",genre:"Action",year:2019,rating:"R",country:"USA",platform:"Netflix",dur:128},
+  {title:"The Platform",genre:"Horror",year:2019,rating:"TV-MA",country:"Spain",platform:"Netflix",dur:94},
+  {title:"Triple Frontier",genre:"Action",year:2019,rating:"R",country:"USA",platform:"Netflix",dur:125},
+  {title:"The Sea Beast",genre:"Animation",year:2022,rating:"PG",country:"USA",platform:"Netflix",dur:119},
+  {title:"The Kissing Booth",genre:"Romance",year:2018,rating:"TV-14",country:"USA",platform:"Netflix",dur:105},
+  {title:"To All the Boys I've Loved Before",genre:"Romance",year:2018,rating:"TV-14",country:"USA",platform:"Netflix",dur:99},
+  {title:"Tall Girl",genre:"Teen",year:2019,rating:"TV-PG",country:"USA",platform:"Netflix",dur:101},
+  {title:"The Family Man",genre:"Thriller",year:2019,rating:"TV-MA",country:"India",platform:"Amazon Prime",dur:130},
+  {title:"Mirzapur",genre:"Crime",year:2018,rating:"TV-MA",country:"India",platform:"Amazon Prime",dur:60},
+  {title:"Panchayat",genre:"Drama",year:2020,rating:"TV-PG",country:"India",platform:"Amazon Prime",dur:30},
+  {title:"Tandav",genre:"Political",year:2021,rating:"TV-MA",country:"India",platform:"Amazon Prime",dur:60},
+  {title:"The Boys",genre:"Action",year:2019,rating:"TV-MA",country:"USA",platform:"Amazon Prime",dur:60},
+  {title:"Breathe",genre:"Thriller",year:2018,rating:"TV-MA",country:"India",platform:"Amazon Prime",dur:45},
+  {title:"Reacher",genre:"Action",year:2022,rating:"TV-MA",country:"USA",platform:"Amazon Prime",dur:60},
+  {title:"Comicstaan",genre:"Comedy",year:2018,rating:"TV-PG",country:"India",platform:"Amazon Prime",dur:60},
+  {title:"Mumbai Diaries",genre:"Drama",year:2021,rating:"TV-14",country:"India",platform:"Amazon Prime",dur:50},
+  {title:"Four More Shots Please",genre:"Drama",year:2019,rating:"TV-MA",country:"India",platform:"Amazon Prime",dur:30},
+  {title:"Aarya",genre:"Crime",year:2020,rating:"TV-MA",country:"India",platform:"Hotstar",dur:50},
+  {title:"Special Ops",genre:"Action",year:2020,rating:"TV-MA",country:"India",platform:"Hotstar",dur:60},
+  {title:"Avengers: Endgame",genre:"Action",year:2019,rating:"PG-13",country:"USA",platform:"Hotstar",dur:181},
+  {title:"Black Widow",genre:"Action",year:2021,rating:"PG-13",country:"USA",platform:"Hotstar",dur:134},
+  {title:"Loki",genre:"Sci-Fi",year:2021,rating:"TV-14",country:"USA",platform:"Hotstar",dur:50},
+  {title:"WandaVision",genre:"Sci-Fi",year:2021,rating:"TV-PG",country:"USA",platform:"Hotstar",dur:30},
+  {title:"Hostages",genre:"Thriller",year:2019,rating:"TV-MA",country:"India",platform:"Hotstar",dur:45},
+  {title:"Criminal Justice",genre:"Crime",year:2019,rating:"TV-MA",country:"India",platform:"Hotstar",dur:45},
+  {title:"Doctor Strange in the Multiverse of Madness",genre:"Action",year:2022,rating:"PG-13",country:"USA",platform:"Hotstar",dur:126},
+  {title:"Rudra: The Edge of Darkness",genre:"Crime",year:2022,rating:"TV-MA",country:"India",platform:"Hotstar",dur:50},
+  {title:"Scam 1992",genre:"Drama",year:2020,rating:"TV-14",country:"India",platform:"Sony LIV",dur:55},
+  {title:"The Good Doctor",genre:"Drama",year:2017,rating:"TV-14",country:"USA",platform:"Sony LIV",dur:45},
+  {title:"Shark Tank India",genre:"Reality",year:2021,rating:"TV-PG",country:"India",platform:"Sony LIV",dur:60},
+  {title:"Maharani",genre:"Political",year:2021,rating:"TV-MA",country:"India",platform:"Sony LIV",dur:45},
+  {title:"Your Honor",genre:"Crime",year:2020,rating:"TV-MA",country:"India",platform:"Sony LIV",dur:50},
+  {title:"Undekhi",genre:"Crime",year:2020,rating:"TV-MA",country:"India",platform:"Sony LIV",dur:45},
+  {title:"Apharan",genre:"Thriller",year:2018,rating:"TV-MA",country:"India",platform:"Sony LIV",dur:45},
+  {title:"Avrodh",genre:"Drama",year:2020,rating:"TV-14",country:"India",platform:"Sony LIV",dur:45},
+  {title:"The Rig",genre:"Sci-Fi",year:2023,rating:"TV-14",country:"UK",platform:"Sony LIV",dur:50},
+  {title:"Bandish Bandits",genre:"Music",year:2020,rating:"TV-14",country:"India",platform:"Sony LIV",dur:45},
+  {title:"Ted Lasso",genre:"Comedy",year:2020,rating:"TV-PG",country:"UK",platform:"Apple TV+",dur:30},
+  {title:"The Morning Show",genre:"Drama",year:2019,rating:"TV-MA",country:"USA",platform:"Apple TV+",dur:60},
+  {title:"Severance",genre:"Sci-Fi",year:2022,rating:"TV-MA",country:"USA",platform:"Apple TV+",dur:60},
+  {title:"Slow Horses",genre:"Thriller",year:2022,rating:"TV-MA",country:"UK",platform:"Apple TV+",dur:50},
+  {title:"Foundation",genre:"Sci-Fi",year:2021,rating:"TV-14",country:"USA",platform:"Apple TV+",dur:60},
+  {title:"For All Mankind",genre:"Sci-Fi",year:2019,rating:"TV-14",country:"USA",platform:"Apple TV+",dur:60},
+  {title:"Mythic Quest",genre:"Comedy",year:2020,rating:"TV-MA",country:"USA",platform:"Apple TV+",dur:30},
+  {title:"Pachinko",genre:"Drama",year:2022,rating:"TV-MA",country:"South Korea",platform:"Apple TV+",dur:60},
+  {title:"The Afterparty",genre:"Comedy",year:2022,rating:"TV-MA",country:"USA",platform:"Apple TV+",dur:30},
+  {title:"Shrinking",genre:"Comedy",year:2023,rating:"TV-MA",country:"USA",platform:"Apple TV+",dur:30},
+  {title:"Kumkum Bhagya",genre:"Romance",year:2014,rating:"TV-PG",country:"India",platform:"Zee5",dur:30},
+  {title:"Kundali Bhagya",genre:"Drama",year:2017,rating:"TV-PG",country:"India",platform:"Zee5",dur:30},
+  {title:"Bhaukaal",genre:"Crime",year:2020,rating:"TV-MA",country:"India",platform:"Zee5",dur:45},
+  {title:"Rangbaaz",genre:"Crime",year:2018,rating:"TV-MA",country:"India",platform:"Zee5",dur:50},
+  {title:"Poison",genre:"Crime",year:2019,rating:"TV-MA",country:"India",platform:"Zee5",dur:45},
+  {title:"LSD 2",genre:"Drama",year:2023,rating:"TV-MA",country:"India",platform:"Zee5",dur:50},
+  {title:"Farzi",genre:"Thriller",year:2023,rating:"TV-MA",country:"India",platform:"Zee5",dur:50},
+  {title:"Sunflower",genre:"Comedy",year:2021,rating:"TV-MA",country:"India",platform:"Zee5",dur:30},
+  {title:"Taali",genre:"Drama",year:2023,rating:"TV-14",country:"India",platform:"Zee5",dur:45},
+  {title:"Duranga",genre:"Thriller",year:2022,rating:"TV-MA",country:"India",platform:"Zee5",dur:45},
+];
+
+// ── Filter state ──────────────────────────────────────────────
+let state = {
+  platforms: ["Netflix","Amazon Prime","Hotstar","Sony LIV","Apple TV+","Zee5"],
+  genre: "All",
+  rating: "All",
+  country: "All",
+  yearFrom: 2014,
+  yearTo: 2023
+};
+
+// ── Platform toggle ───────────────────────────────────────────
+function togglePlatform(el){
+  const p = el.dataset.platform;
+  const active = state.platforms.includes(p);
+  if(active && state.platforms.length === 1) return; // keep at least 1
+  if(active) state.platforms = state.platforms.filter(x=>x!==p);
+  else state.platforms.push(p);
+  el.classList.toggle('active', state.platforms.includes(p));
+  refresh();
+}
+
+// ── Genre toggle ──────────────────────────────────────────────
+function toggleGenre(el){
+  document.querySelectorAll('.genre-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  state.genre = el.dataset.genre;
+  refresh();
+}
+
+// ── Rating toggle ─────────────────────────────────────────────
+function toggleRating(el){
+  document.querySelectorAll('.rating-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  state.rating = el.dataset.rating;
+  refresh();
+}
+
+// ── Country toggle ────────────────────────────────────────────
+function toggleCountry(el){
+  document.querySelectorAll('.country-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  state.country = el.dataset.country;
+  refresh();
+}
+
+// ── Year range ────────────────────────────────────────────────
+function updateYear(){
+  let from = parseInt(document.getElementById('yearFrom').value);
+  let to   = parseInt(document.getElementById('yearTo').value);
+  if(from > to){ [from,to]=[to,from]; }
+  state.yearFrom = from; state.yearTo = to;
+  document.getElementById('yearDisplay').textContent = from + ' – ' + to;
+  refresh();
+}
+
+// ── Clear all ─────────────────────────────────────────────────
+function clearAll(){
+  state = {platforms:["Netflix","Amazon Prime","Hotstar","Sony LIV","Apple TV+","Zee5"],genre:"All",rating:"All",country:"All",yearFrom:2014,yearTo:2023};
+  document.querySelectorAll('.logo-chip').forEach(c=>c.classList.add('active'));
+  document.querySelectorAll('.genre-chip').forEach(c=>c.classList.toggle('active',c.dataset.genre==='All'));
+  document.querySelectorAll('.rating-chip').forEach(c=>c.classList.toggle('active',c.dataset.rating==='All'));
+  document.querySelectorAll('.country-chip').forEach(c=>c.classList.toggle('active',c.dataset.country==='All'));
+  document.getElementById('yearFrom').value=2014;
+  document.getElementById('yearTo').value=2023;
+  document.getElementById('yearDisplay').textContent='2014 – 2023';
+  refresh();
+}
+
+// ── Apply filters ─────────────────────────────────────────────
+function getFiltered(){
+  return DATA.filter(d=>{
+    if(!state.platforms.includes(d.platform)) return false;
+    if(state.genre!=='All' && d.genre!==state.genre) return false;
+    if(state.rating!=='All' && d.rating!==state.rating) return false;
+    if(state.country!=='All' && d.country!==state.country) return false;
+    if(d.year < state.yearFrom || d.year > state.yearTo) return false;
+    return true;
+  });
+}
+
+// ── Refresh all KPIs ─────────────────────────────────────────
+function refresh(){
+  const filtered = getFiltered();
+  const n = filtered.length;
+
+  // KPIs
+  document.getElementById('kpiTitles').innerHTML = n;
+  const plats = [...new Set(filtered.map(d=>d.platform))];
+  document.getElementById('kpiPlatforms').innerHTML = plats.length;
+  const avgDur = n ? Math.round(filtered.reduce((a,d)=>a+d.dur,0)/n) : 0;
+  document.getElementById('kpiDuration').innerHTML = avgDur+'<span style="font-size:14px;font-weight:400"> min</span>';
+  const countries = [...new Set(filtered.map(d=>d.country))];
+  document.getElementById('kpiCountries').innerHTML = countries.length;
+  const adultCount = filtered.filter(d=>d.rating==='TV-MA'||d.rating==='R').length;
+  const adultPct = n ? (adultCount/n*100).toFixed(1) : 0;
+  document.getElementById('kpiAdult').innerHTML = adultPct+'<span style="font-size:14px;font-weight:400">%</span>';
+
+  // Platform bars
+  const platCounts = {};
+  state.platforms.forEach(p=>platCounts[p]=0);
+  filtered.forEach(d=>{ if(platCounts[d.platform]!==undefined) platCounts[d.platform]++; });
+  const maxCount = Math.max(...Object.values(platCounts), 1);
+  document.querySelectorAll('#platformBars .plat-row').forEach(row=>{
+    const p = row.dataset.platform;
+    const cnt = platCounts[p] || 0;
+    const pct = n ? (cnt/n*100).toFixed(1) : 0;
+    const barW = (cnt/maxCount*100).toFixed(0);
+    row.querySelector('.bar-fill').style.width = barW+'%';
+    row.querySelector('.plat-count').textContent = cnt;
+    row.querySelector('.plat-pct').textContent = pct+'%';
+    row.style.opacity = cnt===0 ? '0.3' : '1';
+  });
+  document.getElementById('platBadge').textContent = n+' Total';
+
+  // Filter summary
+  const fs = document.getElementById('filterSummary');
+  const isDefault = state.platforms.length===6 && state.genre==='All' && state.rating==='All' && state.country==='All' && state.yearFrom===2014 && state.yearTo===2023;
+  fs.style.display = isDefault ? 'none' : 'block';
+  if(!isDefault){
+    const parts=[];
+    if(state.platforms.length<6) parts.push(state.platforms.join(', '));
+    if(state.genre!=='All') parts.push('Genre: '+state.genre);
+    if(state.rating!=='All') parts.push('Rating: '+state.rating);
+    if(state.country!=='All') parts.push('Country: '+state.country);
+    if(state.yearFrom!==2014||state.yearTo!==2023) parts.push('Years: '+state.yearFrom+'–'+state.yearTo);
+    document.getElementById('filterText').textContent = n+' titles · '+parts.join(' · ');
+  }
+}
+</script>
+</body>
+</html>
